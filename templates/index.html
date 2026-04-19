@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CS2 분석기 | 대회 지표 및 히트맵</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="logo">
+          <span>CS2</span> PERFORMANCE
+          <small>대회 데이터 분석 및 전략 지표</small>
+        </div>
+      </header>
+
+      <!-- 업로드 섹션 -->
+      <section id="uploadSection">
+        <div class="glass upload-card">
+          <div class="upload-inner" id="uploadInner">
+            <div class="upload-title">DEMO FILE UPLOAD</div>
+            <div class="drop-zone" id="dropZone">
+              <input type="file" id="fileInput" accept=".dem" />
+              <div style="font-size: 50px; margin-bottom: 20px">💾</div>
+              <div class="drop-text">경고: 데모 파일을 여기에 드래그하세요</div>
+              <div class="drop-sub">CS2 .dem 파일 확장자만 분석 가능합니다</div>
+              <div class="fname" id="fname"></div>
+            </div>
+            <button
+              class="btn"
+              id="btnAnalyze"
+              disabled
+              onclick="startAnalyze()"
+            >
+              데이터 분석 시작
+            </button>
+          </div>
+          
+          <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text" id="ltxt">데이터를 불러오는 중...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 결과 섹션 -->
+      <section id="results">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+          <div class="map-badge" id="mapBadge" style="background:var(--accent-blue); color:#000; padding:8px 20px; border-radius:4px; font-weight:700; font-family:var(--disp);"></div>
+          <button class="btn" style="margin-top:0; padding:10px 25px; font-size:12px;" onclick="resetUI()">새로운 데모 분석</button>
+        </div>
+
+        <div class="slabel">경기 요약 (OVERVIEW)</div>
+        <div class="sgrid" id="sgrid"></div>
+
+        <div class="score-board glass">
+          <div class="team-side team-a">
+            <div class="team-name" id="t-a-name">TEAM A</div>
+            <div class="team-score" id="s-a">0</div>
+          </div>
+          <div class="score-vs">VS</div>
+          <div class="team-side team-b">
+            <div class="team-score" id="s-b">0</div>
+            <div class="team-name" id="t-b-name">TEAM B</div>
+          </div>
+        </div>
+
+        <div class="slabel">전술 분석 (TACTICAL ANALYSIS)</div>
+        <div class="glass hmap-wrap">
+          <div class="hmap-toolbar" id="toolbar">
+            <button class="filter-btn active" data-layer="kills">킬 위치</button>
+            <button class="filter-btn" data-layer="deaths">데스 위치</button>
+            <button class="filter-btn" data-layer="shots">사격 지점</button>
+            <button class="filter-btn" data-layer="smokes">연막탄</button>
+            <button class="filter-btn" data-layer="flashes">섬광탄</button>
+            <button class="filter-btn" data-layer="he">수류탄</button>
+          </div>
+          <div class="canvas-box" id="canvasBox">
+            <div id="heatmap-container">
+              <canvas id="cvMap"></canvas>
+              <canvas id="cvHeat"></canvas>
+            </div>
+          </div>
+          <div id="noMap" style="padding:40px; text-align:center; color:var(--accent-red); display:none;">
+            맵 데이터를 찾을 수 없습니다. <br>
+            <code style="background:#000; padding:5px 10px; border-radius:4px; margin-top:10px; display:inline-block;">awpy get maps</code> 명령어로 맵을 설치하세요.
+          </div>
+        </div>
+
+        <div class="slabel">무기별 통계 (WEAPON KILLS)</div>
+        <div id="wep"></div>
+
+        <div class="slabel">플레이어 상세 스탯 (PLAYER STATISTICS)</div>
+        <div id="ptable"></div>
+      </section>
+    </div>
+
+    <script src="{{ url_for('static', path='js/app.js') }}"></script>
+  </body>
+</html>
