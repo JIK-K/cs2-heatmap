@@ -130,7 +130,10 @@ function renderDashboard(data) {
   // 3. Players Table
   renderPlayers(data.players);
 
-  // 4. Heatmap Initialization
+  // 4. Weapon Stats
+  if (data.weapons) renderWeaponStats(data.weapons);
+
+  // 5. Heatmap Initialization
   loadMapImage(data.map_name);
   
   elements.results.scrollIntoView({ behavior: "smooth" });
@@ -187,6 +190,21 @@ function getRatingClass(r) {
   return "rating-low";
 }
 
+function renderWeaponStats(weapons) {
+  if (!elements.weaponStats) return;
+  
+  const maxKills = weapons.length > 0 ? weapons[0].kills : 1;
+  elements.weaponStats.innerHTML = weapons.slice(0, 10).map(w => `
+    <div class="weapon-row">
+      <div class="weapon-name">${w.weapon.toUpperCase()}</div>
+      <div class="weapon-bar-container">
+        <div class="weapon-bar" style="width: ${(w.kills / maxKills) * 100}%"></div>
+      </div>
+      <div class="weapon-kills">${w.kills}</div>
+    </div>
+  `).join("");
+}
+
 // ── Heatmap Engine ──
 function loadMapImage(mapName) {
   elements.noMap.style.display = "none";
@@ -194,6 +212,13 @@ function loadMapImage(mapName) {
   
   state.mapImage = new Image();
   state.mapImage.onload = handleMapResize;
+  state.mapImage.onerror = () => {
+    elements.noMap.style.display = "block";
+    state.mapImage.hasError = true;
+    state.mapImage.mockWidth = 1024;
+    state.mapImage.mockHeight = 1024;
+    handleMapResize();
+  };
   state.mapImage.src = `/map-image/${mapName}`;
   
   window.addEventListener("resize", handleMapResize);
@@ -202,9 +227,11 @@ function loadMapImage(mapName) {
 
 function handleMapResize() {
   const container = document.getElementById("heatmap-container");
-  if (!state.mapImage.width) return;
+  const imgW = state.mapImage.mockWidth || state.mapImage.width;
+  const imgH = state.mapImage.mockHeight || state.mapImage.height;
+  if (!imgW) return;
 
-  const aspect = state.mapImage.height / state.mapImage.width;
+  const aspect = imgH / imgW;
   const w = container.clientWidth;
   const h = w * aspect;
   container.style.height = h + "px";
@@ -212,8 +239,9 @@ function handleMapResize() {
   const cvs = ["cvMap", "cvHeat"];
   cvs.forEach(id => {
     const c = document.getElementById(id);
-    c.width = w;
-    c.height = h;
+    // 내부 해상도를 1024로 고정하여 좌표계(0~1)와 매칭
+    c.width = 1024;
+    c.height = 1024;
   });
 
   drawMap();
@@ -224,9 +252,15 @@ function drawMap() {
   const ctx = document.getElementById("cvMap").getContext("2d");
   const c = document.getElementById("cvMap");
   ctx.clearRect(0, 0, c.width, c.height);
-  ctx.drawImage(state.mapImage, 0, 0, c.width, c.height);
-  ctx.fillStyle = "rgba(0,0,0,0.5)"; // Dim the map for better visibility
-  ctx.fillRect(0, 0, c.width, c.height);
+  
+  if (!state.mapImage.hasError && state.mapImage.complete) {
+    ctx.drawImage(state.mapImage, 0, 0, c.width, c.height);
+    ctx.fillStyle = "rgba(0,0,0,0.5)"; // Dim the map for better visibility
+    ctx.fillRect(0, 0, c.width, c.height);
+  } else {
+    ctx.fillStyle = "#111"; // Fallback dark background
+    ctx.fillRect(0, 0, c.width, c.height);
+  }
 }
 
 function setupHeatmapControls() {

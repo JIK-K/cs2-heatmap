@@ -495,3 +495,45 @@ tr:last-child td { border-bottom: none; }
   font-family: var(--mono);
   letter-spacing: 2px;
 }
+
+/* Weapons Stats */
+.weapon-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.weapon-name {
+  width: 180px;
+  font-family: var(--disp);
+  font-size: 13px;
+  color: var(--text-main);
+  text-align: right;
+  padding-right: 20px;
+  letter-spacing: 1px;
+}
+
+.weapon-bar-container {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  height: 6px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.weapon-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+  transition: width 1s ease-out;
+}
+
+.weapon-kills {
+  width: 60px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--accent-green);
+  font-weight: bold;
+}
