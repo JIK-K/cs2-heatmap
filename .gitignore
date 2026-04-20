@@ -1,5 +1,9 @@
 .DS_STORE
-
+.nenv
+data/temp/
+data/static/
+data/maps/
+temp_*.dem
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

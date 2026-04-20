@@ -142,18 +142,27 @@ function renderDashboard(data) {
 function renderPlayers(players) {
   const teams = {};
   players.forEach(p => {
-    if (!teams[p.team_name]) teams[p.team_name] = [];
-    teams[p.team_name].push(p);
+    let tname = p.team_name || "Unknown Team";
+    if (!teams[tname]) teams[tname] = [];
+    teams[tname].push(p);
   });
 
-  const teamNames = Object.keys(teams);
+  const teamNames = Object.keys(teams).sort((a, b) => {
+    // Try to sort by CT/T if possible, or just alphabetically
+    if (a.toLowerCase().includes("ct") || a.toLowerCase().includes("counter")) return -1;
+    if (b.toLowerCase().includes("ct") || b.toLowerCase().includes("counter")) return 1;
+    return a.localeCompare(b);
+  });
+
   elements.playerTable.innerHTML = `
     <div class="team-container">
-      ${teamNames.map((t, idx) => `
+      ${teamNames.map((t, idx) => {
+        const isCT = t.toLowerCase().includes("ct") || t.toLowerCase().includes("counter") || idx === 0;
+        return `
         <div class="glass team-box">
-          <div class="team-header ${idx === 0 ? 'ct' : 't'}">
+          <div class="team-header ${isCT ? 'ct' : 't'}">
             <div class="team-info">
-              <span class="team-side-tag">${idx === 0 ? 'CT' : 'T'}</span>
+              <span class="team-side-tag">${isCT ? 'CT' : 'T'}</span>
               <span class="team-name-text">${t}</span>
             </div>
             <div class="team-meta">${teams[t].length} PLAYERS</div>
@@ -164,7 +173,7 @@ function renderPlayers(players) {
                 <tr><th>PLAYER</th><th>K</th><th>D</th><th>A</th><th>ADR</th><th>IMP</th><th>RATING</th></tr>
               </thead>
               <tbody>
-                ${teams[t].map(p => `
+                ${teams[t].sort((a, b) => b.rating - a.rating).map(p => `
                   <tr>
                     <td class="p-name">${p.name}</td>
                     <td class="p-val">${p.kills}</td>
@@ -179,7 +188,7 @@ function renderPlayers(players) {
             </table>
           </div>
         </div>
-      `).join("")}
+      `}).join("")}
     </div>
   `;
 }
@@ -296,13 +305,13 @@ function drawKDE(ctx, pts, W, H, rgb) {
 
   pts.forEach(([px, py]) => {
     const gx = px * GRID, gy = py * GRID;
-    const r = Math.ceil(bw * GRID * 2.5);
+    const r = Math.ceil(bw * GRID * 3); // Increased radius slightly
     for (let dy = -r; dy <= r; dy++) {
       for (let dx = -r; dx <= r; dx++) {
         const nx = Math.floor(gx + dx), ny = Math.floor(gy + dy);
         if (nx < 0 || ny < 0 || nx >= GRID || ny >= GRID) continue;
         const dist2 = Math.pow(px - nx / GRID, 2) + Math.pow(py - ny / GRID, 2);
-        if (dist2 < bw2 * 4) density[ny * GRID + nx] += Math.exp(-dist2 / (2 * bw2));
+        if (dist2 < bw2 * 6) density[ny * GRID + nx] += Math.exp(-dist2 / (2 * bw2));
       }
     }
   });
